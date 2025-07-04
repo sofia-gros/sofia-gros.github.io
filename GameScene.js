@@ -1,4 +1,4 @@
-import Emitter from "../modules/Emitter.js";
+import Emitter from "./Emitter.js";
 
 // 指定円周上のランダム位置
 function randRandomXY(gameObject, minRand, maxRand) {
@@ -19,9 +19,9 @@ export default class GameScene extends Phaser.Scene {
   }
   preload()
   {
-    this.load.spritesheet("number", "./game/assets/number.png", { frameWidth: 8, frameHeight: 8 });
-    this.load.spritesheet("character", "./game/assets/character.png", { frameWidth: 24, frameHeight: 24 });
-    this.load.spritesheet("item", "./game/assets/item.png", { frameWidth: 24, frameHeight: 24 });
+    this.load.spritesheet("number", "./number.png", { frameWidth: 8, frameHeight: 8 });
+    this.load.spritesheet("character", "./character.png", { frameWidth: 24, frameHeight: 24 });
+    this.load.spritesheet("item", "./assets/item.png", { frameWidth: 24, frameHeight: 24 });
     
   }
   create()
