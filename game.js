@@ -1,5 +1,5 @@
-import GameScene from "./scenes/GameScene.js";
-import UIScene from "./scenes/UIScene.js";
+import GameScene from "./GameScene.js";
+import UIScene from "./UIScene.js";
 
 const config = {
   type: Phaser.WEBGL,
