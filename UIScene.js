@@ -1,4 +1,4 @@
-import Emitter from "../modules/Emitter.js";
+import Emitter from "./Emitter.js";
 
 export default class UIScene extends Phaser.Scene {
   constructor()
