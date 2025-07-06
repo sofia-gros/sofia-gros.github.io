@@ -106,10 +106,10 @@ export default class GameScene extends Phaser.Scene {
     
     // ポップアップウインドウ
     new PopupWindow(this, `Welcome ${this.user_name}!\nthis game is\n fan made game!\n\nMade by\n Sofia & Fin\n\n\nClick to\n Close Window`, 54, 32, 18, 14)
-      .show()
+      .show();
     
-    this.input.addPointer(3); // 2本指までOK（必要ならもっと増やせる）
-    this.debugInput();
+    this.input.addPointer(3); // 指の認識数
+    // this.debugInput();
     
   }
   
@@ -146,7 +146,6 @@ export default class GameScene extends Phaser.Scene {
         this.spacePressedTime = 0;
       }
     } else {
-      console.log(this.spacePressedTime)
       if(this.spacePressedTime !== 0) {
         if(this.mario.body.velocity.y === 0) this.mario.setVelocityY(-200);
         this.spacePressedTime = 0;
@@ -170,14 +169,12 @@ export default class GameScene extends Phaser.Scene {
     if (!this.cameraFollowing && this.mario.x > screenCenterX) {
       this.cameras.main.startFollow(this.mario, true, 1, 0);
       this.cameraFollowing = true;
-      console.log("追従を開始しました"); // ログをより明確に
     }
     // カメラが追従中で、かつ特定の条件が満たされた場合に追従を停止
     // 例: マリオが画面の左端付近に戻ってきた場合など
     else if (this.cameraFollowing && this.mario.x < this.cameras.main.scrollX) {
       this.cameras.main.stopFollow();
       this.cameraFollowing = false;
-      console.log("追従を停止しました"); // ログをより明確に
     }
 
     // カメラが追従中の場合、Y座標を固定する
@@ -185,26 +182,11 @@ export default class GameScene extends Phaser.Scene {
       this.cameras.main.scrollY = 0;
     }
 
-    /*
-    // カメラ追従
-    const screenCenterX = this.cameras.main.scrollX + this.cameras.main.width / 2;
-    if (this.mario.x > screenCenterX) {
-      this.cameras.main.startFollow(this.mario, true, 1, 0);
-      this.cameraFollowing = true;
-      console.log("追従")
-    } else {
-      this.cameras.main.stopFollow();
-      console.log("止まる")
-      this.cameraFollowing = false;
-    }
-    if(this.cameraFollowing) this.cameras.main.scrollY = 0;
-    */
-    
     // マリオの左移動制限
     const leftLimit = this.cameras.main.scrollX;
     if (this.mario.x < leftLimit) {
       this.mario.x = leftLimit;
-      this.mario.setVelocityX(0); // ぴったり止める
+      this.mario.setVelocityX(0);
     }
     
     
