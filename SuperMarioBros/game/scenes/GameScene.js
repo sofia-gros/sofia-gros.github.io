@@ -106,7 +106,11 @@ export default class GameScene extends Phaser.Scene {
     
     // ポップアップウインドウ
     new PopupWindow(this, `Welcome ${this.user_name}!\nthis game is\n fan made game!\n\nMade by\n Sofia & Fin\n\n\nClick to\n Close Window`, 54, 32, 18, 14)
-      .show();
+      .show()
+      .close_callback(() => {
+        new PopupWindow(this, `Controll\n\nA, S: Move\n\nSPACE: Jump\n(short press,\n long press)`, 54, 32, 18, 14)
+          .show()
+      });
     
     this.input.addPointer(3); // 指の認識数
     // this.debugInput();
@@ -232,6 +236,7 @@ class PopupWindow
     this.width = width;
     this.height = height;
     this.popup_group = scene.add.group();
+    this.callback = { show: null, close: null };
   }
   show()
   {
@@ -273,7 +278,10 @@ class PopupWindow
       size: 8
     }).setScrollFactor(0);
     this.popup_group.add(t);
-    
+    if(this.callback.show) {
+      this.collback.show();
+      this.callback.show = null;
+    }
     scene.input.setHitArea(this.popup_group.getChildren()).on("gameobjectdown", (pointer, gameObject) => {
       this.close();
     });
@@ -281,7 +289,17 @@ class PopupWindow
   }
   close()
   {
+    if(this.callback.close) {
+      this.callback.close();
+      this.callback.close = null;
+    }
     this.popup_group.destroy(true);
     return this;
+  }
+  show_callback(func) {
+    if(func) this.callback.show = func;
+  }
+  close_callback(func) {
+    if(func) this.callback.close = func;
   }
 }
