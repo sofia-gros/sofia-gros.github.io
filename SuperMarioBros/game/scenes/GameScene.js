@@ -58,7 +58,7 @@ export default class GameScene extends Phaser.Scene {
     // 入力
     this.keyboard = this.input.keyboard.addKeys({
       left: "A",
-      right: "D",
+      right: "S",
       jump: "SPACE"
     });
     this.velocityX = 0; // 現在の速度
@@ -114,6 +114,10 @@ export default class GameScene extends Phaser.Scene {
     
     this.input.addPointer(3); // 指の認識数
     // this.debugInput();
+    
+    Emitter.on("isLeft", press => this.leftPressed = press );
+    Emitter.on("isRight", press => this.rightPressed = press );
+    Emitter.on("isJump", press => this.spacePressed = press );
     
   }
   
