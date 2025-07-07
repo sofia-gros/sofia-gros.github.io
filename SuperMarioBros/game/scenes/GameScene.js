@@ -113,8 +113,7 @@ export default class GameScene extends Phaser.Scene {
       });
     
     this.input.addPointer(3); // 指の認識数
-    // this.debugInput();
-    
+
     Emitter.on("isLeft", press => this.leftPressed = press );
     Emitter.on("isRight", press => this.rightPressed = press );
     Emitter.on("isJump", press => this.spacePressed = press );
@@ -142,14 +141,12 @@ export default class GameScene extends Phaser.Scene {
     this.velocityX = Phaser.Math.Clamp(this.velocityX, -100, 100);
     // 実際に速度を適用
     this.mario.setVelocityX(this.velocityX);
-    
-    // this.mario.x = Math.round(this.mario.x);
-    // this.mario.y = Math.round(this.mario.y);
-    
+
+
     // ジャンプ時間
     if(isJump) {
       this.spacePressedTime ++;
-      if(this.spacePressedTime > 15) {
+      if(this.spacePressedTime > 12) {
         if(this.mario.body.velocity.y === 0) this.mario.setVelocityY(-260);
         this.spacePressedTime = 0;
       }
@@ -198,32 +195,6 @@ export default class GameScene extends Phaser.Scene {
     }
     
     
-  }
-  
-  debugInput()
-  {
-    this.rightBtn = this.add.rectangle(16+24*1.5, 160, 16, 16, 0x8888ff).setInteractive().setScrollFactor(0);
-    this.rightBtnText = this.add.text(12+24*1.5, 158, "->", { fontSize: "8px" }).setScrollFactor(0);
-    this.rightPressed = false;
-    this.rightBtn.on("pointerdown", () => this.rightPressed = true );
-    this.rightBtn.on("pointerup", () => this.rightPressed = false );
-    this.rightBtn.on("pointerout", () => this.rightPressed = false );
-    
-    this.leftBtn = this.add.rectangle(16, 160, 16, 16, 0x8888ff).setInteractive().setScrollFactor(0);
-    this.leftBtnText = this.add.text(12, 158, "<-", { fontSize: "8px" }).setScrollFactor(0);
-    this.leftPressed = false;
-    this.leftBtn.on("pointerdown", () => this.leftPressed = true );
-    this.leftBtn.on("pointerup", () => this.leftPressed = false );
-    this.leftBtn.on("pointerout", () => this.leftPressed = false );
-    
-    this.spaceBtn = this.add.rectangle(16+24*6, 160, 16, 16, 0x8888ff).setInteractive().setScrollFactor(0);
-    this.spaceBtnText = this.add.text(12+24*6, 158, "J", { fontSize: "8px" }).setScrollFactor(0);
-    this.spacePressed = false;
-    this.spaceBtn.on("pointerdown", () => {
-      this.spacePressed = true;
-    });
-    this.spaceBtn.on("pointerup", () => this.spacePressed = false );
-    this.spaceBtn.on("pointerout", () => this.spacePressed = false );
   }
   
   
