@@ -9,12 +9,12 @@ html, body {
 #virtual-controll {
   position: absolute;
   display: none;
-  bottom: 5em;
+  bottom: 6em;
   width: 100%;
 }
 #virtual-controll button {
-  width: 4em;
-  height: 4em;
+  width: 6em;
+  height: 6em;
   padding: 0;
   border-radius: 50%;
   border-color: #00000000;

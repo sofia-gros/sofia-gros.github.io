@@ -9,35 +9,36 @@ export default class GameScene extends Phaser.Scene {
   }
   preload()
   {
-    this.load.image("texture", "./game/assets/texture.png");
+    this.load.spritesheet("texture", "./game/assets/texture.png", { frameWidth: 16, frameHeight: 16 });
     this.load.json("world", "./game/assets/world.json");
-    this.load.bitmapFont("font", './game/assets/pixel.png', './game/assets/pixel.fnt');
+    this.load.bitmapFont("font", './game/assets/pixel.png', "./game/assets/pixel.fnt");
   }
   init()
   {
-    this.state = {
-      stage: "stage-1"
+    
+    // 初期値
+    this.collision_world = this.physics.add.staticGroup();
+    this.block_frame = {
+      0: null,
+      1: 0, // 🧱
+      2: 1, // ⬛
+      3: 2, // ❔
+      8: 32, // 🍄‍🟫
+      9: 9, // 🚩
     };
+    this.velocityX = 0;
+    this.spacePressedTime = 0;
+    this.spacePressedTime = 0;
+    this.state = {};
+    
   }
-  create()
+  create(props)
   {
     console.log("GameScene create");
-   
-    // 定数
-    this.user_name = "Fumiya";
-    this.maxCameraScrollX = 0;
-    this.spacePressedTime = 0;
-   
-    // テクスチャ設定
-    const texture = this.textures.get("texture");
-    texture.add(0, 0, 32, 32, 16, 16);
-    texture.add(1, 0, 0, 0, 16, 16); // レンガ
-    texture.add(2, 0, 16, 0, 16, 16); // ハテナ
-    texture.add(3, 0, 32, 0, 16, 16); // 固いブロック
-    texture.add(4, 0, 48, 0, 16, 16); // 石壁
-    texture.add("mario-idle", 0, 0, 32, 16, 16); // マリオ: アイドル状態
     
-    // popupテクスチャ
+    this.state.count = props?.count != null? props.count: 10;
+    
+    const texture = this.textures.get("texture");
     texture.add("window-0", 0, 0, 48, 8, 8); // 上左
     texture.add("window-1", 0, 8, 48, 8, 8); // 上中
     texture.add("window-2", 0, 16, 48, 8, 8); // 上右
@@ -48,75 +49,91 @@ export default class GameScene extends Phaser.Scene {
     texture.add("window-7", 0, 8, 64, 8, 8); // 下左
     texture.add("window-8", 0, 16, 64, 8, 8); // 下左
     
-    // 初期化
-    this.collision_world = this.physics.add.staticGroup();
-    this.mario = this.physics.add.image(16, 16*9 -32, "texture", "mario-idle").setOrigin(0);
-    this.mario.setSize(8, 16, true);
-    this.cameraFollowing = false;
-    this.cameras.main.setRoundPixels(true);
     
+    
+    this.make.bitmapText({
+      x: 6, y: 6,
+      text: `Player: ${this.state.count}`,
+      font: "font",
+      size: 8
+    }).setScrollFactor(0);
+    
+    // キャラクター設計
+    this.player = this.physics.add.group();
+    this.player_sprite = this.physics.add.sprite(16, 120, "texture", 20);
+    // this.player_sprite = this.physics.add.sprite(16 * 90, 120, "texture", 20);
+    this.player_sprite.body.setSize(8, 16);
+    this.player.add(this.player_sprite);
+
+    // カメラ
+    this.cameras.main.startFollow(this.player_sprite, true, 1.0, .1);
+
     // 入力
     this.keyboard = this.input.keyboard.addKeys({
       left: "A",
       right: "S",
       jump: "SPACE"
     });
-    this.velocityX = 0; // 現在の速度
-    this.acceleration = 5; // 加速量
-    this.friction = 0.95;   // 減速率（0.9〜0.95くらいが自然）
     
-    
+    // スマホ入力
+    Emitter.on("isLeft", press => this.leftPressed = press );
+    Emitter.on("isRight", press => this.rightPressed = press );
+    Emitter.on("isJump", press => this.spacePressed = press );
     
     // ワールドデータ読み込み
-    const world = this.cache.json.get("world")[this.state.stage];
-    
+    const world = this.cache.json.get("world")["stage-1"];
     // ワールド生成
     for(let y = 0; y < world.length; y ++) {
       for(let x = 0; x < world[y].length; x ++) {
         let frame = world[y][x];
         if(frame === 0) continue;
-        const block = this.physics.add.staticImage(x * 16, y * 16, "texture", frame).setOrigin(0);
+        const block = this.physics.add.staticSprite(x * 16, y * 16, "texture", this.block_frame[frame]).setOrigin(0);
         block.body.setOffset(8, 8);
         this.collision_world.add(block);
+        if(frame === 8) { // 🍄‍🟫
+          block.setData({ enemy: true, move: "left" });
+        }
       }
     }
     
-    // Marioと壁の当たり判定
-    this.physics.add.collider(this.mario, this.collision_world, (mario, block) => {
-      if(block.frame.name === 2) {
-        // ハテナブロック
-        const marioTop = mario.body.y;
-        const blockBottom = block.body.y + block.body.height;
-        const yDiff = marioTop - blockBottom;
-        if (yDiff > -15) {
-          Emitter.emit("?-block", "mushroom", block);
-        }
+    // 説明
+    if(this.state.count === 10) {
+      // ポップアップウインドウ
+      new PopupWindow(this, `Welcome Game!!\nthis is\n fan made game!\n\nMade by\n Sofia & Fin\n\n\nClick to\n Close Window`, 54, 32, 18, 14)
+        .show()
+        .close_callback(() => {
+          new PopupWindow(this, `Controll\n\nA, S: Move\n\nSPACE: Jump\n(short press,\n long press)`, 54, 32, 18, 14)
+            .show()
+        });
+    }
+    
+    // 当たり判定
+    this.physics.add.collider(this.player, this.collision_world, (player, block) => {
+      switch(block.frame.name) {
+        case 1: // ❔
+          if(!this.player_sprite.body.blocked.up) return;
+          block.setFrame(2);
+        break;
+        case 9: // 🚩
+          new PopupWindow(this, `\n\n\n\nGAME CLEAR!!!\n\n\n\nMada Aruyo XD`, 54, 32, 18, 14)
+            .show()
+            .close_callback(() => {
+              this.scene.start("GameScene");
+            });
+        break;
+        case 32: // 🍄‍🟫
+          if(this.player_sprite.body.blocked.down && this.player_sprite.y < 148) {
+            // 倒す
+            this.collision_world.remove(block);
+            block.destroy();
+            this.player.setVelocityY(-200);
+          } else {
+            this.scene.start("GameScene", { count: this.state.count - 1 });
+          }
+        break;
       }
     });
     
-    // マリオとハテナブロック
-    Emitter.on("?-block", (type, block) => {
-      this.collision_world.remove(block);
-      const _ = this.physics.add.staticImage(block.x, block.y, "texture", 3).setOrigin(0);
-      _.body.setOffset(8, 8);
-      block.destroy();
-      this.collision_world.add(_);
-    });
-    
-    
-    // ポップアップウインドウ
-    new PopupWindow(this, `Welcome ${this.user_name}!\nthis game is\n fan made game!\n\nMade by\n Sofia & Fin\n\n\nClick to\n Close Window`, 54, 32, 18, 14)
-      .show()
-      .close_callback(() => {
-        new PopupWindow(this, `Controll\n\nA, S: Move\n\nSPACE: Jump\n(short press,\n long press)`, 54, 32, 18, 14)
-          .show()
-      });
-    
-    this.input.addPointer(3); // 指の認識数
-
-    Emitter.on("isLeft", press => this.leftPressed = press );
-    Emitter.on("isRight", press => this.rightPressed = press );
-    Emitter.on("isJump", press => this.spacePressed = press );
     
   }
   
@@ -128,73 +145,54 @@ export default class GameScene extends Phaser.Scene {
     const isJump = this.keyboard.jump.isDown || this.spacePressed;
   
     if (isRight) {
-      this.velocityX += this.acceleration;
+      this.velocityX += 5;
     } else if (isLeft) {
-      this.velocityX -= this.acceleration;
+      this.velocityX -= 5;
     } else {
       // 慣性による減速
-      this.velocityX *= this.friction;
+      this.velocityX *= .95;
       // めっちゃ小さい値で揺れないように
       if (Math.abs(this.velocityX) < 1) this.velocityX = 0;
     }
     // 速度制限（あれば）
     this.velocityX = Phaser.Math.Clamp(this.velocityX, -100, 100);
     // 実際に速度を適用
-    this.mario.setVelocityX(this.velocityX);
-
-
+    this.player.setVelocityX(this.velocityX);
+    
     // ジャンプ時間
     if(isJump) {
       this.spacePressedTime ++;
       if(this.spacePressedTime > 12) {
-        if(this.mario.body.velocity.y === 0) this.mario.setVelocityY(-260);
+        if(this.player_sprite.body.velocity.y === 0) this.player.setVelocityY(-260);
         this.spacePressedTime = 0;
       }
     } else {
       if(this.spacePressedTime !== 0) {
-        if(this.mario.body.velocity.y === 0) this.mario.setVelocityY(-200);
+        if(this.player_sprite.body.velocity.y === 0) this.player.setVelocityY(-200);
         this.spacePressedTime = 0;
       }
       this.spacePressedTime = 0;
     }
     
-    // スプライトの状態
-    if(this.mario.body.velocity.x >= 0) {
-      this.mario.setFrame("mario-idle");
-      this.mario.flipX = false;
-    } else {
-      this.mario.setFrame("mario-idle");
-      this.mario.flipX = true;
-    }
-
-    
-        // カメラ追従
-    const screenCenterX = this.cameras.main.scrollX + this.cameras.main.width / 2;
-    // まだカメラが追従していない、かつマリオが画面中央より右にいる場合に追従を開始
-    if (!this.cameraFollowing && this.mario.x > screenCenterX) {
-      this.cameras.main.startFollow(this.mario, true, 1, 0);
-      this.cameraFollowing = true;
-    }
-    // カメラが追従中で、かつ特定の条件が満たされた場合に追従を停止
-    // 例: マリオが画面の左端付近に戻ってきた場合など
-    else if (this.cameraFollowing && this.mario.x < this.cameras.main.scrollX) {
-      this.cameras.main.stopFollow();
-      this.cameraFollowing = false;
-    }
-
-    // カメラが追従中の場合、Y座標を固定する
-    if(this.cameraFollowing) {
-      this.cameras.main.scrollY = 0;
-    }
-
-    // マリオの左移動制限
-    const leftLimit = this.cameras.main.scrollX;
-    if (this.mario.x < leftLimit) {
-      this.mario.x = leftLimit;
-      this.mario.setVelocityX(0);
+    if(this.player_sprite.y > 400) {
+      this.scene.start("GameScene", { count: this.state.count - 1 });
     }
     
-    
+
+    this.collision_world.getChildren().forEach(obj => {
+      if (obj.getData("enemy")) {
+        // 敵としての動き処理
+        const moveDir = obj.getData("move");
+        if (moveDir === "left") {
+          obj.x -= .2; // ← 左に移動（staticなので手動で）
+        } else if (moveDir === "right") {
+          obj.x += .2;
+        }
+        // 座標を更新してあげる（staticなので必要）
+        obj.refreshBody();
+      }
+    });
+
   }
   
   
