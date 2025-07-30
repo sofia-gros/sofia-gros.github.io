@@ -71,7 +71,7 @@ export default class GameScene extends Phaser.Scene {
     // 入力
     this.keyboard = this.input.keyboard.addKeys({
       left: "A",
-      right: "S",
+      right: "D",
       jump: "SPACE"
     });
     
@@ -102,7 +102,7 @@ export default class GameScene extends Phaser.Scene {
       new PopupWindow(this, `Welcome Game!!\nthis is\n fan made game!\n\nMade by\n Sofia & Fin\n\n\nClick to\n Close Window`, 54, 32, 18, 14)
         .show()
         .close_callback(() => {
-          new PopupWindow(this, `Controll\n\nA, S: Move\n\nSPACE: Jump\n(short press,\n long press)`, 54, 32, 18, 14)
+          new PopupWindow(this, `Controll\n\nA, D: Move\n\nSPACE: Jump\n(short press,\n long press)`, 54, 32, 18, 14)
             .show()
         });
     }
