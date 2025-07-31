@@ -11,6 +11,10 @@ html, body {
   display: none;
   bottom: 6em;
   width: 100%;
+  -webkit-user-select: none; /* Safari, Chrome */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE 10+ */
+  user-select: none;        /* 標準 */
 }
 #virtual-controll button {
   width: 6em;
@@ -18,7 +22,10 @@ html, body {
   padding: 0;
   border-radius: 50%;
   border-color: #00000000;
-  user-select: none;
+  -webkit-user-select: none; /* Safari, Chrome */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE 10+ */
+  user-select: none;        /* 標準 */
 }
 #virtual-controll button#left, #virtual-controll button#right {
   background-color: rgb(159,159,159);
